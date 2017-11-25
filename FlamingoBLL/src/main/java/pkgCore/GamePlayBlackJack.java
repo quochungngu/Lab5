@@ -124,7 +124,7 @@ public class GamePlayBlackJack extends GamePlay {
 				playerHand.setBlackJackResult(eBlackJackResult.TIE);
 				continue;
 			}
-			//	TODO: Determine if player is a winner
+			//Determine if player is a winner
 			
 			// Find the Dealer's hand
 			// Score Dealer's hand
