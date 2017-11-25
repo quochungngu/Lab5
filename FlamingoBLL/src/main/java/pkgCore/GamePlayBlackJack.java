@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import pkgException.DeckException;
 import pkgException.HandException;
-
+import pkgEnum.eBlackJackResult;
 import pkgEnum.eGameType;
 
 public class GamePlayBlackJack extends GamePlay {
@@ -54,7 +54,11 @@ public class GamePlayBlackJack extends GamePlay {
 
 		HandScoreBlackJack HSB = (HandScoreBlackJack)h.ScoreHand();
 		
-		// TODO: Determine if the player can draw another card (are they busted?)
+		if (HSB.getNumericScores().getFirst() <= 21) { // first element is the smallest score
+			bCanPlayerDraw = true;
+		}
+		// Logically a player wouldn't draw if they have 21, but it's technically legal
+		// for them to draw as long as they're not busted.
 
 		return bCanPlayerDraw;
 	}
@@ -68,13 +72,14 @@ public class GamePlayBlackJack extends GamePlay {
 		
 		HandScoreBlackJack HSB = (HandScoreBlackJack)hDealer.ScoreHand();
 		
-		//TODO: Determine if the dealer MUST draw.
+		if (HSB.getNumericScores().getLast() >= 17) { //last element is largest score
+			bDoesDealerHaveToDraw = false;
+		}
 		//		Dealer must draw unless they are bust and they don't have a 
-		//		numeric score between 17-21.  
+		//		numeric score between 17-21.[Prof. seems to have made a typo, dealer must draw if they have don't have a 17-21]
 		//		5-5 = 10, they must draw
 		//		A-6 = 7 or 17, they must stay (because they have 17)
 		//		J-J-J = 30, they are busted, they can't draw
-		
 		
 		return bDoesDealerHaveToDraw;
 	}
@@ -85,24 +90,81 @@ public class GamePlayBlackJack extends GamePlay {
 	
 	
 	
-	public void ScoreGame(GamePlayerHand GPH)
-	{
-		boolean bIsHandWinner = false;
-		//	TODO: Determine if player is a winner
+	public void ScoreGame(HashMap<GamePlayerHand, Hand> hmGameHands) throws HandException {
+		boolean bIsHandWinner = false; // I don't think this is useful. -Hung
 		
-		//	TODO: Find the Dealer's hand
-		//	TODO: Score Dealer's hand
+		Iterator it = hmGameHands.entrySet().iterator();
+				
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry) it.next();
+			GamePlayerHand GPH = (GamePlayerHand) pair.getKey();
+			HandBlackJack playerHand = (HandBlackJack) this.gethmGameHand(GPH);
+			
+			if (!bCanPlayerDraw(GPH)) { //Player busts; player loses even if dealer busts
+				playerHand.setBlackJackResult(eBlackJackResult.LOSE);
+				continue;
+			}
+			
+			if (bIsDealerBusted()) { //Dealer busts
+				playerHand.setBlackJackResult(eBlackJackResult.WIN);
+				continue;
+			}
+			
+			if (findHighestScore(playerHand) > findHighestScore(hDealer)) {
+				playerHand.setBlackJackResult(eBlackJackResult.WIN);
+				continue;
+			}
+			
+			if (findHighestScore(playerHand) < findHighestScore(hDealer)) {
+				playerHand.setBlackJackResult(eBlackJackResult.LOSE);
+				continue;
+			}
+			
+			if (findHighestScore(playerHand) == findHighestScore(hDealer)) {
+				playerHand.setBlackJackResult(eBlackJackResult.TIE);
+				continue;
+			}
+			//	TODO: Determine if player is a winner
+			
+			// Find the Dealer's hand
+			// Score Dealer's hand
+			
+			// Find Player's hand
+			//Score Player's hand
+			
+			//If Player's hand > Dealer's hand and <= 21, then eBlackJackResult = WIN
+			//			If Player's hand < Dealer's hand and Dealer didn't bust = LOSE
+			//			If Player's hand == Dealer's hand and both didn't bust = TIE
+			
+		}
+	}
+	
+	public boolean bIsDealerBusted() throws HandException {
+		boolean isDealerBusted = true;
+
+		HandScoreBlackJack dealerScore = (HandScoreBlackJack) hDealer.ScoreHand();
+		if (dealerScore.getNumericScores().get(0) <=21) {
+			isDealerBusted = false;
+		}
 		
-		//	TODO: Find Player's hand
-		//	TODO: Score Player's hand
-		
-		//	TODO: If Player's hand > Dealer's hand and <= 21, then eBlackJackResult = WIN
-		//			If Player's hand < Dealer's hand and Dealer didn't bust = LOSE
-		//			If Player's hand == Dealer's hand and both didn't bust = TIE
-		
-		
+		return isDealerBusted;
 	}
 
+	public int findHighestScore(Hand hand) throws HandException{
+		HandScoreBlackJack HSB = (HandScoreBlackJack) hand.ScoreHand();
+		
+		int highestScore = HSB.getNumericScores().getFirst();
+		
+		for(int score:HSB.getNumericScores()) {
+			if (score <= 21) { //NumericScores sorted from lowest to highest scores
+				highestScore = score;
+			}
+		}
+		
+		return highestScore;
+	}
+	
+	
 	public Player getpDealer() {
 		return pDealer;
 	}

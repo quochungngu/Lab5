@@ -3,8 +3,11 @@ package pkgCore;
 import java.util.Collections;
 import java.util.LinkedList;
 
-public class HandBlackJack extends Hand  {
+import pkgEnum.eBlackJackResult;
 
+public class HandBlackJack extends Hand  {
+	
+	private eBlackJackResult blackJackResult; // added attribute for gameScore
 
 	@Override
 	public HandScore ScoreHand() {
@@ -65,11 +68,15 @@ public class HandBlackJack extends Hand  {
 		return (HandScoreBlackJack)super.getHS();
 	}
 
-	@Override
-	public void setbWinner(boolean bWinner) {
-		super.setbWinner(bWinner);
+	//deleted bWinner overriding setter
+	
+	protected eBlackJackResult getBlackJackResult() { //added getter
+		return blackJackResult;
 	}
-	
-	
+
+	protected void setBlackJackResult(eBlackJackResult blackJackResult) { //added setter
+		this.blackJackResult = blackJackResult;
+	}
+
 
 }
