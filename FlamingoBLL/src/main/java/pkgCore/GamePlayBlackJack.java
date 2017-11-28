@@ -90,67 +90,57 @@ public class GamePlayBlackJack extends GamePlay {
 	
 	
 	
-	public void ScoreGame(HashMap<GamePlayerHand, Hand> hmGameHands) throws HandException {
-		boolean bIsHandWinner = false; // I don't think this is useful. -Hung
-		
-		Iterator it = hmGameHands.entrySet().iterator();
-				
-		while (it.hasNext()) {
-			Map.Entry pair = (Map.Entry) it.next();
-			GamePlayerHand GPH = (GamePlayerHand) pair.getKey();
-			HandBlackJack playerHand = (HandBlackJack) this.gethmGameHand(GPH);
-			
-			if (!bCanPlayerDraw(GPH)) { //Player busts; player loses even if dealer busts
-				playerHand.setBlackJackResult(eBlackJackResult.LOSE);
-				continue;
-			}
-			
-			if (bIsDealerBusted()) { //Dealer busts
-				playerHand.setBlackJackResult(eBlackJackResult.WIN);
-				continue;
-			}
-			
-			if (findHighestScore(playerHand) > findHighestScore(hDealer)) {
-				playerHand.setBlackJackResult(eBlackJackResult.WIN);
-				continue;
-			}
-			
-			if (findHighestScore(playerHand) < findHighestScore(hDealer)) {
-				playerHand.setBlackJackResult(eBlackJackResult.LOSE);
-				continue;
-			}
-			
-			if (findHighestScore(playerHand) == findHighestScore(hDealer)) {
-				playerHand.setBlackJackResult(eBlackJackResult.TIE);
-				continue;
-			}
-			//Determine if player is a winner
-			
-			// Find the Dealer's hand
-			// Score Dealer's hand
-			
-			// Find Player's hand
-			//Score Player's hand
-			
-			//If Player's hand > Dealer's hand and <= 21, then eBlackJackResult = WIN
-			//			If Player's hand < Dealer's hand and Dealer didn't bust = LOSE
-			//			If Player's hand == Dealer's hand and both didn't bust = TIE
-			
+	public void ScoreGame(GamePlayerHand GPH) throws HandException {
+
+		HandBlackJack playerHand = (HandBlackJack) this.gethmGameHand(GPH);
+
+		if (!bCanPlayerDraw(GPH)) { //Player can't draw, player bust, automatic loss for player
+			playerHand.setBlackJackResult(eBlackJackResult.LOSE);
 		}
+		else if (bIsDealerBusted()) { //Dealer busts
+			playerHand.setBlackJackResult(eBlackJackResult.WIN);
+		}
+		else if (findHighestScore(playerHand) > findHighestScore(hDealer)) {
+			playerHand.setBlackJackResult(eBlackJackResult.WIN);
+		}
+		else if (findHighestScore(playerHand) < findHighestScore(hDealer)) {
+			playerHand.setBlackJackResult(eBlackJackResult.LOSE);
+		}
+		else {
+			// Only possibility left is that playerHand and hDealer are equal
+			playerHand.setBlackJackResult(eBlackJackResult.TIE);
+		}
+		
+		this.putHandToGame(GPH, playerHand);
+
+		//Determine if player is a winner
+
+		// Find the Dealer's hand
+		// Score Dealer's hand
+
+		// Find Player's hand
+		//Score Player's hand
+
+		//If Player's hand > Dealer's hand and <= 21, then eBlackJackResult = WIN
+		//			If Player's hand < Dealer's hand and Dealer didn't bust = LOSE
+		//			If Player's hand == Dealer's hand and both didn't bust = TIE
+
+
 	}
 	
-	public boolean bIsDealerBusted() throws HandException {
+	private boolean bIsDealerBusted() throws HandException {
 		boolean isDealerBusted = true;
 
 		HandScoreBlackJack dealerScore = (HandScoreBlackJack) hDealer.ScoreHand();
-		if (dealerScore.getNumericScores().get(0) <=21) {
+		if (dealerScore.getNumericScores().getFirst() <=21) {
+			// first element is always lowest score
 			isDealerBusted = false;
 		}
 		
 		return isDealerBusted;
 	}
 
-	public int findHighestScore(Hand hand) throws HandException{
+	private int findHighestScore(Hand hand) throws HandException{
 		HandScoreBlackJack HSB = (HandScoreBlackJack) hand.ScoreHand();
 		
 		int highestScore = HSB.getNumericScores().getFirst();

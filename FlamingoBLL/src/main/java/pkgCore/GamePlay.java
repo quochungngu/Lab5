@@ -56,8 +56,7 @@ public abstract class GamePlay {
 		return hmGamePlayers;
 	}
 
-	protected HashMap<GamePlayerHand, Hand> getHmGameHands() {
-		//changed from private to protected so GamePlayBlackJack can ScoreGame
+	private HashMap<GamePlayerHand, Hand> getHmGameHands() {
 		return hmGameHands;
 	}
 
