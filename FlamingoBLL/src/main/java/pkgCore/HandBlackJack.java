@@ -70,11 +70,11 @@ public class HandBlackJack extends Hand  {
 
 	//deleted bWinner overriding setter
 	
-	protected eBlackJackResult getBlackJackResult() { //added getter
+	public eBlackJackResult getBlackJackResult() { //added getter
 		return blackJackResult;
 	}
 
-	protected void setBlackJackResult(eBlackJackResult blackJackResult) { //added setter
+	public void setBlackJackResult(eBlackJackResult blackJackResult) { //added setter
 		this.blackJackResult = blackJackResult;
 	}
 

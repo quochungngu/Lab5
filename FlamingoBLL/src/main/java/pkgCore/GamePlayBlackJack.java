@@ -50,7 +50,7 @@ public class GamePlayBlackJack extends GamePlay {
 	private boolean bCanPlayerDraw(GamePlayerHand GPH) throws HandException {
 		boolean bCanPlayerDraw = false;
 
-		Hand h = this.gethmGameHand(GPH);
+		HandBlackJack h = (HandBlackJack) this.gethmGameHand(GPH);
 
 		HandScoreBlackJack HSB = (HandScoreBlackJack)h.ScoreHand();
 		
@@ -75,56 +75,31 @@ public class GamePlayBlackJack extends GamePlay {
 		if (HSB.getNumericScores().getLast() >= 17) { //last element is largest score
 			bDoesDealerHaveToDraw = false;
 		}
-		//		Dealer must draw unless they are bust and they don't have a 
-		//		numeric score between 17-21.[Prof. seems to have made a typo, dealer must draw if they have don't have a 17-21]
-		//		5-5 = 10, they must draw
-		//		A-6 = 7 or 17, they must stay (because they have 17)
-		//		J-J-J = 30, they are busted, they can't draw
 		
 		return bDoesDealerHaveToDraw;
 	}
 	
-	
-	
-	
-	
-	
-	
 	public void ScoreGame(GamePlayerHand GPH) throws HandException {
 
-		HandBlackJack playerHand = (HandBlackJack) this.gethmGameHand(GPH);
+		Hand playerHand = this.gethmGameHand(GPH);
 
 		if (!bCanPlayerDraw(GPH)) { //Player can't draw, player bust, automatic loss for player
-			playerHand.setBlackJackResult(eBlackJackResult.LOSE);
+			//player is loser
 		}
 		else if (bIsDealerBusted()) { //Dealer busts
-			playerHand.setBlackJackResult(eBlackJackResult.WIN);
+			playerHand.setbWinner();
 		}
 		else if (findHighestScore(playerHand) > findHighestScore(hDealer)) {
-			playerHand.setBlackJackResult(eBlackJackResult.WIN);
+			playerHand.setbWinner();
 		}
 		else if (findHighestScore(playerHand) < findHighestScore(hDealer)) {
-			playerHand.setBlackJackResult(eBlackJackResult.LOSE);
+			//lose
 		}
 		else {
 			// Only possibility left is that playerHand and hDealer are equal
-			playerHand.setBlackJackResult(eBlackJackResult.TIE);
 		}
 		
 		this.putHandToGame(GPH, playerHand);
-
-		//Determine if player is a winner
-
-		// Find the Dealer's hand
-		// Score Dealer's hand
-
-		// Find Player's hand
-		//Score Player's hand
-
-		//If Player's hand > Dealer's hand and <= 21, then eBlackJackResult = WIN
-		//			If Player's hand < Dealer's hand and Dealer didn't bust = LOSE
-		//			If Player's hand == Dealer's hand and both didn't bust = TIE
-
 
 	}
 	
