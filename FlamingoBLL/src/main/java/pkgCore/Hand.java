@@ -12,7 +12,6 @@ public abstract class Hand {
 	private UUID HandID;
 	private ArrayList<Card> cards;
 	private HandScore HS;
-	private boolean bWinner = false;
 
 	public Hand() {
 		this.HandID = UUID.randomUUID();
@@ -46,13 +45,5 @@ public abstract class Hand {
 
 	protected void AddCard(Card c) {
 		cards.add(c);
-	}
-	
-	public void setbWinner() {
-		bWinner = true;
-	}
-	
-	public boolean getbWinner() {
-		return bWinner;
 	}
 }

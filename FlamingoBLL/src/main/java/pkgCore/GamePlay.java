@@ -61,7 +61,8 @@ public abstract class GamePlay {
 	}
 
 	protected Hand gethmGameHand(GamePlayerHand GPH) {
-		return this.hmGameHands.get(GPH.getGPH());
+		//return this.hmGameHands.get(GPH.getGPH());
+		return this.hmGameHands.get(GPH);
 	}
 
 	public void setHmGameHands(HashMap<GamePlayerHand, Hand> hmGameHands) {

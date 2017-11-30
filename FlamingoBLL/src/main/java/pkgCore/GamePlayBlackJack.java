@@ -47,10 +47,10 @@ public class GamePlayBlackJack extends GamePlay {
 		return c;
 	}
 
-	private boolean bCanPlayerDraw(GamePlayerHand GPH) throws HandException {
+	public boolean bCanPlayerDraw(GamePlayerHand GPH) throws HandException {
 		boolean bCanPlayerDraw = false;
 
-		HandBlackJack h = (HandBlackJack) this.gethmGameHand(GPH);
+		Hand h = this.gethmGameHand(GPH);
 
 		HandScoreBlackJack HSB = (HandScoreBlackJack)h.ScoreHand();
 		
@@ -68,46 +68,47 @@ public class GamePlayBlackJack extends GamePlay {
 	public boolean bDoesDealerHaveToDraw() throws HandException
 	{
 		boolean bDoesDealerHaveToDraw = true;
-		
-		
-		HandScoreBlackJack HSB = (HandScoreBlackJack)hDealer.ScoreHand();
-		
-		if (HSB.getNumericScores().getLast() >= 17) { //last element is largest score
+
+		if (findHighestScore(hDealer) >= 17 || bIsDealerBusted()) {
 			bDoesDealerHaveToDraw = false;
 		}
 		
 		return bDoesDealerHaveToDraw;
 	}
-	
 	public void ScoreGame(GamePlayerHand GPH) throws HandException {
 
-		Hand playerHand = this.gethmGameHand(GPH);
-
+		HandBlackJack playerHand = (HandBlackJack) this.gethmGameHand(GPH);
+		
 		if (!bCanPlayerDraw(GPH)) { //Player can't draw, player bust, automatic loss for player
-			//player is loser
+			playerHand.setBlackJackResult(eBlackJackResult.LOSE);
+			System.out.println("Player busts.");
 		}
 		else if (bIsDealerBusted()) { //Dealer busts
-			playerHand.setbWinner();
+			playerHand.setBlackJackResult(eBlackJackResult.WIN);
+			System.out.println("Dealer busts.");
 		}
 		else if (findHighestScore(playerHand) > findHighestScore(hDealer)) {
-			playerHand.setbWinner();
+			playerHand.setBlackJackResult(eBlackJackResult.WIN);
+			System.out.println("Player higher.");
 		}
 		else if (findHighestScore(playerHand) < findHighestScore(hDealer)) {
-			//lose
+			playerHand.setBlackJackResult(eBlackJackResult.LOSE);
+			System.out.println("Player lower.");
 		}
 		else {
 			// Only possibility left is that playerHand and hDealer are equal
+			playerHand.setBlackJackResult(eBlackJackResult.TIE);
+			System.out.println("Player tie.");
 		}
 		
 		this.putHandToGame(GPH, playerHand);
-
 	}
 	
 	private boolean bIsDealerBusted() throws HandException {
 		boolean isDealerBusted = true;
-
 		HandScoreBlackJack dealerScore = (HandScoreBlackJack) hDealer.ScoreHand();
-		if (dealerScore.getNumericScores().getFirst() <=21) {
+		
+		if (dealerScore.getNumericScores().getFirst() <= 21) {
 			// first element is always lowest score
 			isDealerBusted = false;
 		}
@@ -116,12 +117,15 @@ public class GamePlayBlackJack extends GamePlay {
 	}
 
 	private int findHighestScore(Hand hand) throws HandException{
+		// Find highest score 21 and under; or lowest score over 21
 		HandScoreBlackJack HSB = (HandScoreBlackJack) hand.ScoreHand();
-		
-		int highestScore = HSB.getNumericScores().getFirst();
+		int highestScore = -1;
 		
 		for(int score:HSB.getNumericScores()) {
-			if (score <= 21) { //NumericScores sorted from lowest to highest scores
+			if (score > 21) { //NumericScores sorted from lowest to highest scores
+				break;
+			}
+			else {
 				highestScore = score;
 			}
 		}
@@ -132,5 +136,9 @@ public class GamePlayBlackJack extends GamePlay {
 	
 	public Player getpDealer() {
 		return pDealer;
+	}
+	
+	protected void setHDealerForTests(HandBlackJack h) { // for testing only
+		this.hDealer = h;
 	}
 }

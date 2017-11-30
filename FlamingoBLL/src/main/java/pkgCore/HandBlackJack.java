@@ -74,7 +74,7 @@ public class HandBlackJack extends Hand  {
 		return blackJackResult;
 	}
 
-	public void setBlackJackResult(eBlackJackResult blackJackResult) { //added setter
+	protected void setBlackJackResult(eBlackJackResult blackJackResult) { //added setter
 		this.blackJackResult = blackJackResult;
 	}
 

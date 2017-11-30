@@ -5,137 +5,147 @@ import static org.junit.Assert.*;
 import java.util.HashMap;
 import java.util.UUID;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import pkgEnum.eBlackJackResult;
 import pkgException.DeckException;
 import pkgException.HandException;
 
 public class GamePlayBlackJackTest {
+	private GamePlayBlackJack GPBJ;
+	private GamePlayerHand GPH1;
+	private GamePlayerHand GPH2;
+	
+	@Before
+	public void makeBlackJackGamePlay() throws HandException,DeckException{
+		// Making GamePlayBlackJack
+		Deck d = new Deck();
+		HashMap<UUID, Player> hmTablePlayer = new HashMap<UUID,Player>();
+		Player p1 = new Player("p1", 1);
+		Player p2 = new Player("p2", 1);
+		
+		hmTablePlayer.put(p1.getPlayerID(), p1);
+		hmTablePlayer.put(p2.getPlayerID(), p2);
+		
+		GPBJ = new GamePlayBlackJack(hmTablePlayer, d);
+		
+		// Creating artificial hands for players
+		HandBlackJack h1 = new HandBlackJack();
+		HandBlackJack h2 = new HandBlackJack();
+		
+		// player 1's h1 always max 18
+		h1.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.EIGHT));
+		h1.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.KING));
+		
+		// player 2's h2 always max 21
+		h2.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.ACE));
+		h2.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.KING));
+		h2.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.KING));
+		
+		GPH1 = new GamePlayerHand(GPBJ.getGameID(),p1.getPlayerID(),UUID.randomUUID());
+		GPH2 = new GamePlayerHand(GPBJ.getGameID(),p1.getPlayerID(),UUID.randomUUID());
+		
+		HashMap<GamePlayerHand, Hand> hmGameHands = new HashMap<GamePlayerHand, Hand>();
+		hmGameHands.put(GPH1, h1);
+		hmGameHands.put(GPH2, h2);
+		
+		// setting artificial hands
+		GPBJ.setHmGameHands(hmGameHands);
+	}
 
 	@Test
 	public void TestPlayerWinning() throws HandException, DeckException {
-		//creating a game of blackjack
-		Deck d = new Deck();
-		Player p1 = new Player("p1", 1);
-		HashMap<UUID, Player> players = new HashMap<UUID,Player>();
-		players.put(p1.getPlayerID(), p1);
-		GamePlayBlackJack GPBJ = new GamePlayBlackJack(players, d);
+		HandBlackJack hDealer = new HandBlackJack();
+		// Dealer is 17
+		hDealer.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.SEVEN));
+		hDealer.AddCard(new Card(pkgEnum.eSuit.HEARTS, pkgEnum.eRank.KING));
 		
-		//creating hands
-		HandBlackJack HP1 = new HandBlackJack();
-		HP1.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.ACE));
-		HP1.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.KING));
+		GPBJ.setHDealerForTests(hDealer);
 		
-		HandBlackJack HD = new HandBlackJack();
-		HD.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.SEVEN));
-		HD.AddCard(new Card(pkgEnum.eSuit.HEARTS, pkgEnum.eRank.KING));
-		
-		
-		//adding hands to game
-		GamePlayerHand GPH1 = new GamePlayerHand(GPBJ.getGameID(), p1.getPlayerID(), HP1.getHandID());
-		GPBJ.putHandToGame(GPH1, HP1);
-		GamePlayerHand GD = new GamePlayerHand(GPBJ.getGameID(), GPBJ.getpDealer().getPlayerID(), HD.getHandID());
-		GPBJ.putHandToGame(GD, HD);
-		
+		// Score player 1's 18 against dealer
+		System.out.println("\nWin player higher");
 		GPBJ.ScoreGame(GPH1);
-		assertTrue(GPBJ.gethmGameHand(GPH1).getbWinner());
 		
+		HandBlackJack h1 = (HandBlackJack) GPBJ.gethmGameHand(GPH1);
+		assertEquals(h1.getBlackJackResult(),eBlackJackResult.WIN);
+		
+		// Dealer is now 27; bust for dealer, player wins if not busted
+		hDealer.AddCard(new Card(pkgEnum.eSuit.HEARTS, pkgEnum.eRank.KING));
+		
+		// Scoring player 2's 21 against busted dealer
+		System.out.println("\nWin dealer bust");
+		GPBJ.ScoreGame(GPH2);
+		
+		HandBlackJack h2 = (HandBlackJack) GPBJ.gethmGameHand(GPH2);
+		assertEquals(h2.getBlackJackResult(),eBlackJackResult.WIN);
 	}
 
 	@Test
 	public void TestPlayerLosing() throws HandException {
-		//creating a game of blackjack
-				Deck d = new Deck();
-				Player p1 = new Player("p1", 1);
-				HashMap<UUID, Player> players = new HashMap<UUID,Player>();
-				players.put(p1.getPlayerID(), p1);
-				GamePlayBlackJack GPBJ = new GamePlayBlackJack(players, d);
-				
-				//creating hands
-				HandBlackJack HP1 = new HandBlackJack();
-				HP1.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.SEVEN));
-				HP1.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.TWO));
-				
-				HandBlackJack HD = new HandBlackJack();
-				HD.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.ACE));
-				HD.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.KING));
-				
-				
-				//adding hands to game
-				GamePlayerHand GPH1 = new GamePlayerHand(GPBJ.getGameID(), p1.getPlayerID(), HP1.getHandID());
-				GPBJ.putHandToGame(GPH1, HP1);
-				GamePlayerHand GD = new GamePlayerHand(GPBJ.getGameID(), GPBJ.getpDealer().getPlayerID(), HD.getHandID());
-				GPBJ.putHandToGame(GD, HD);
-				
-				GPBJ.ScoreGame(GPH1);
-				assertFalse(GPBJ.gethmGameHand(GPH1).getbWinner());
+		HandBlackJack hDealer = new HandBlackJack();
+		// Dealer is 19
+		hDealer.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.NINE));
+		hDealer.AddCard(new Card(pkgEnum.eSuit.HEARTS, pkgEnum.eRank.KING));
+		
+		GPBJ.setHDealerForTests(hDealer);
+		
+		// Score player 1's 18 against dealer
+		System.out.println("\nLose player lower");
+		GPBJ.ScoreGame(GPH1);
+		
+		HandBlackJack h1 = (HandBlackJack) GPBJ.gethmGameHand(GPH1);
+		assertEquals(h1.getBlackJackResult(),eBlackJackResult.LOSE);
+		
+		// Player 2 is now 29, and busted; automatic loss
+		HandBlackJack h2 = (HandBlackJack) GPBJ.gethmGameHand(GPH2);
+		h2.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.EIGHT));
+		
+		GPBJ.putHandToGame(GPH2, h2);
+
+		// Scoring player 2's bust against dealer
+		System.out.println("\nLose player bust");
+		GPBJ.ScoreGame(GPH2);
+		assertEquals(h2.getBlackJackResult(),eBlackJackResult.LOSE);
 	}
 	
 	@Test
 	public void TestPlayerTie() throws HandException {
-		//creating a game of blackjack
-				Deck d = new Deck();
-				Player p1 = new Player("p1", 1);
-				HashMap<UUID, Player> players = new HashMap<UUID,Player>();
-				players.put(p1.getPlayerID(), p1);
-				GamePlayBlackJack GPBJ = new GamePlayBlackJack(players, d);
-				
-				//creating hands
-				HandBlackJack HP1 = new HandBlackJack();
-				HP1.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.ACE));
-				HP1.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.KING));
-				
-				HandBlackJack HD = new HandBlackJack();
-				HD.AddCard(new Card(pkgEnum.eSuit.SPADES, pkgEnum.eRank.ACE));
-				HD.AddCard(new Card(pkgEnum.eSuit.SPADES, pkgEnum.eRank.KING));
-				
-				
-				//adding hands to game
-				GamePlayerHand GPH1 = new GamePlayerHand(GPBJ.getGameID(), p1.getPlayerID(), HP1.getHandID());
-				GPBJ.putHandToGame(GPH1, HP1);
-				GamePlayerHand GD = new GamePlayerHand(GPBJ.getGameID(), GPBJ.getpDealer().getPlayerID(), HD.getHandID());
-				GPBJ.putHandToGame(GD, HD);
-				
-				GPBJ.ScoreGame(GPH1);
-				assertFalse(GPBJ.gethmGameHand(GPH1).getbWinner());
+		HandBlackJack hDealer = new HandBlackJack();
+		// Dealer is 18
+		hDealer.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.EIGHT));
+		hDealer.AddCard(new Card(pkgEnum.eSuit.HEARTS, pkgEnum.eRank.KING));
+		
+		GPBJ.setHDealerForTests(hDealer);
+		
+		// Score player 1's 18 against dealer
+		System.out.println("\nTie Test");
+		GPBJ.ScoreGame(GPH1);
+		
+		HandBlackJack h1 = (HandBlackJack) GPBJ.gethmGameHand(GPH1);
+		assertEquals(h1.getBlackJackResult(),eBlackJackResult.TIE);
 	}
 	
 	@Test
 	public void TestTwoPlayersWinning() throws HandException
 	{
-		//creating a game of blackjack
-				Deck d = new Deck();
-				Player p1 = new Player("p1", 1);
-				Player p2 = new Player("p2", 2);
-				HashMap<UUID, Player> players = new HashMap<UUID,Player>();
-				players.put(p1.getPlayerID(), p1);
-				players.put(p2.getPlayerID(),p2);
-				
-				//creating hands
-				HandBlackJack HP1 = new HandBlackJack();
-				HP1.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.ACE));
-				HP1.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.KING));
-				
-				HandBlackJack HP2 = new HandBlackJack();
-				HP1.AddCard(new Card(pkgEnum.eSuit.SPADES, pkgEnum.eRank.ACE));
-				HP1.AddCard(new Card(pkgEnum.eSuit.SPADES, pkgEnum.eRank.KING));
-				
-				HandBlackJack HD = new HandBlackJack();
-				HD.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.SEVEN));
-				HD.AddCard(new Card(pkgEnum.eSuit.HEARTS, pkgEnum.eRank.KING));
-				
-
-				GamePlayBlackJack GPBJ = new GamePlayBlackJack(players,d);
-				//adding hands to game
-				GamePlayerHand GPH1 = new GamePlayerHand(GPBJ.getGameID(), p1.getPlayerID(), HP1.getHandID());
-				GPBJ.putHandToGame(GPH1, HP1);
-				GamePlayerHand GPH2 = new GamePlayerHand(GPBJ.getGameID(), p2.getPlayerID(),HP2.getHandID());
-				GPBJ.putHandToGame(GPH2, HP2);
-				GamePlayerHand GD = new GamePlayerHand(GPBJ.getGameID(), GPBJ.getpDealer().getPlayerID(), HD.getHandID());
-				GPBJ.putHandToGame(GD, HD);
-				
-				GPBJ.ScoreGame(GPH1);
-				assertTrue(GPBJ.gethmGameHand(GPH1).getbWinner());
-				assertTrue(GPBJ.gethmGameHand(GPH2).getbWinner());
+		HandBlackJack hDealer = new HandBlackJack();
+		// Dealer is 27, bust for dealer; player wins if not busted
+		hDealer.AddCard(new Card(pkgEnum.eSuit.CLUBS, pkgEnum.eRank.SEVEN));
+		hDealer.AddCard(new Card(pkgEnum.eSuit.HEARTS, pkgEnum.eRank.KING));
+		hDealer.AddCard(new Card(pkgEnum.eSuit.HEARTS, pkgEnum.eRank.KING));
+		
+		GPBJ.setHDealerForTests(hDealer);
+		
+		// Score player 1's 18 and player 2's 21 against dealer
+		System.out.println("\nTwo Winners; dealer bust");
+		GPBJ.ScoreGame(GPH1);
+		GPBJ.ScoreGame(GPH2);
+		
+		HandBlackJack h1 = (HandBlackJack) GPBJ.gethmGameHand(GPH1);
+		HandBlackJack h2 = (HandBlackJack) GPBJ.gethmGameHand(GPH2);
+		
+		assertEquals(h1.getBlackJackResult(),eBlackJackResult.WIN);
+		assertEquals(h2.getBlackJackResult(),eBlackJackResult.WIN);
 	}
 }
